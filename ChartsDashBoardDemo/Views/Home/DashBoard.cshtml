@@ -1,0 +1,118 @@
+﻿
+@{
+    ViewBag.Title = "DashBoard";
+}
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/Chart.js"></script>
+
+<h2>DashBoard</h2>
+<button id="addNewChart">اضافة جديد</button>
+
+@*<canvas id="myChart" responsive="true" responsiveAnimationDuration="0" maintainAspectRatio="true" ></canvas>*@
+@*<script type="text/javascript">
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            datasets: [{
+                label: 'My First dataset',
+                backgroundColor: 'rgb(255, 99, 132)',//'#FFDE0D',
+                borderColor: 'rgb(255, 99, 132)', //'#330033',
+                data: [0, 10, 5, 2, 20, 30, 45]
+            }]
+        },
+
+        // Configuration options go here
+        options: {}
+    });
+</script>*@
+
+<canvas id="myChart2"></canvas>
+<div id="charts"></div>
+<script>
+    var opts = null;
+    $(document).ready(function () {
+         $.ajax({
+            url: '@Url.Action("GetDashBoardCharts", "Home")',
+            type: 'GET',
+             success: function (Result) {
+                 $.each(Result.data, function (i, val) {
+                     $('#charts').append("<canvas id=\"" + val + "\"></canvas>");                  
+                     RenderChart(val);                    
+                 })
+                
+            },
+        });
+        
+    })
+    function RenderChart(chartGuid) {
+        $.ajax({
+            url: '@Url.Action("GetChartData", "Home")',
+            type: 'GET',
+            data: { chartGuid: chartGuid},
+            success: function (Result) {
+                var ctx = document.getElementById(chartGuid);
+                var myChart = new Chart(ctx, {
+                    type: Result.type,
+                    data: Result.data
+                });
+                $('#' + chartGuid).after("<a href=\"javascript: EditChart(" + chartGuid + ")\">تعديل</a><span value=\" \">&nbsp;&nbsp;&nbsp;&nbsp;</span><a href=\"javascript: RemoveChart(" + chartGuid + ")\">حذف</a>");
+
+            },
+        });
+    }
+    $('#addNewChart').click(function () {
+        document.location.href = '@Url.Action("Chart", "Home")';
+    })
+    function RemoveChart(chartGuid) {
+        if (!confirm('هل ترغب في حذف هذه الخريطة؟'))
+            return;
+        $.ajax({
+            url: '@Url.Action("RemoveChart", "Home")',
+            type: 'Post',
+            data: { chartGuid: chartGuid },
+            success: function (Result) {
+                $('#' + chartGuid).remove();
+            }
+        });
+    }
+        function EditChart(chartGuid) {
+            document.location.href = '@Url.Action("EditChart","Home")'/chartGuid;
+    }
+
+    //var ctx = document.getElementById('myChart2');
+    //var myChart = new Chart(ctx, {
+    //    type: 'bar',
+    //    data: {
+    //        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    //        datasets: [{
+    //            label: '# of Votes',
+    //            data: [12, 19, 3, 5, 2, 3],
+    //            backgroundColor:
+    //                [
+    //                'rgba(255, 99, 132, 0.2)',
+    //                'rgba(54, 162, 235, 0.2)',
+    //                'rgba(255, 206, 86, 0.2)',
+    //                'rgba(75, 192, 192, 0.2)',
+    //                'rgba(153, 102, 255, 0.2)',
+    //                'rgba(255, 159, 64, 0.2)'
+    //                ] 
+    //            ,
+    //            borderColor: [
+    //                'rgba(255, 99, 132, 1)',
+    //                'rgba(54, 162, 235, 1)',
+    //                'rgba(255, 206, 86, 1)',
+    //                'rgba(75, 192, 192, 1)',
+    //                'rgba(153, 102, 255, 1)',
+    //                'rgba(255, 159, 64, 1)'
+    //            ],
+    //            borderWidth: 1
+    //        }
+    //        ]
+    //    },
+    //});
+</script>
